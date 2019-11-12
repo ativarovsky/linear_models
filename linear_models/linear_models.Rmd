@@ -1,0 +1,85 @@
+---
+title: "Linear Models"
+author: "Alice Tivarovsky"
+date: "11/12/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Slides 
+
+LM = Linear Models
+GLM = Generalized Linear Models (include logistic)
+
+# Examples
+
+Setup code
+
+```{r setup}
+
+library(tidyverse)
+library(p8105.datasets)
+
+set.seed(1)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+```
+
+
+## Model Fitting
+
+The code below loads and cleans the Airbnb data, which we’ll use as a primary example for fitting linear models.
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2) %>% 
+  rename(
+    boro = neighbourhood_group,
+    neighborhood = neighbourhood) %>% 
+  filter(boro != "Staten Island") %>% 
+  select(price, stars, boro, neighborhood, room_type)
+
+```
+
+
+Fitting a linear model for price based on stars and boro. Here, reference category is taken as Bronx: 
+
+```{r}
+fit = lm(price ~ boro + stars, data = nyc_airbnb)
+fit
+```
+
+You can run a summary (old-school) and pull out the coefficients: 
+
+```{r}
+summary(fit)
+coef(fit)
+summary(fit)$coef
+```
+
+But it's better to use broom::tidy to create a workable dataframe. 
+
+```{r}
+fit %>% 
+  broom::tidy() %>% 
+  mutate(str_replace(term, "boro", "Boro: ")) %>% 
+  knitr::kable(digits = 3)
+```
+
+
