@@ -174,6 +174,74 @@ bootstrap_results =
   unnest(results) 
 ```
 
+summarize these results:
+
+## Try the modelr package
+
+``` r
+boot_straps = 
+  sim_df_nonconst %>% 
+  modelr::bootstrap(n = 1000)
+```
+
+## What if your assumptions aren’t wrong?
+
+``` r
+sim_df_const %>% 
+  lm(y ~x, data = .) %>% 
+  broom::tidy()
+```
+
+    ## # A tibble: 2 x 5
+    ##   term        estimate std.error statistic   p.value
+    ##   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)     1.98    0.0981      20.2 3.65e- 54
+    ## 2 x               3.04    0.0699      43.5 3.84e-118
+
+## Airbnb Example
+
+``` r
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2) %>% 
+  rename(
+    boro = neighbourhood_group,
+    neighborhood = neighbourhood) %>% 
+  filter(boro != "Staten Island") %>% 
+  select(price, stars, boro, neighborhood, room_type)
+```
+
+``` r
+nyc_airbnb %>% 
+  ggplot(aes(x = stars, y = price, color = room_type)) + 
+  geom_point() 
+```
+
+<img src="linear_models_files/figure-gfm/unnamed-chunk-12-1.png" width="90%" />
+
+Re-use stuff up top…
+
+``` r
+nyc_airbnb %>% 
+  filter(boro == "Manhattan") %>% 
+  modelr::bootstrap(n = 1000) %>% 
+  mutate(
+    models = map(strap, ~ lm(price ~ stars + room_type, data = .x)),
+    results = map(models, broom::tidy)) %>% 
+  select(results) %>% 
+  unnest(results) %>% 
+  filter(term == "stars") %>% 
+  ggplot(aes(x = estimate)) + geom_density()
+```
+
+<img src="linear_models_files/figure-gfm/unnamed-chunk-13-1.png" width="90%" />
+
+Note that this is not a normal distribution - it’s skewed. This is an
+example of when violations of assumptions give you results that don’t
+make sense.
+
 # Other Materials
 
   - This
