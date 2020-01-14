@@ -270,6 +270,8 @@ pivot_longer(
 
 The smooth model is good, but the piecewise linear model is a bit nicer because it has an easy interpretation. 
 
+just practice 
+
 # Other Materials
 
 Cross validation is important, but still a bit new to the tidyverse. Some helpful posts are available, though, including:
